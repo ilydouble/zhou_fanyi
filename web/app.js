@@ -89,7 +89,8 @@ class FaceFusionApp {
             'fanyi2': '💄',
             'fanyi3': '667eea',
             'fanyi4': '764ba2',
-            'fanyi5': 'ff9a9e'
+            'fanyi5': 'ff9a9e',
+            'fanyi6': '4ecdc4'
         };
         return colors[style] || 'ff6b6b';
     }
@@ -100,7 +101,8 @@ class FaceFusionApp {
             'fanyi2': '💄',
             'fanyi3': '✨',
             'fanyi4': '🌟',
-            'fanyi5': '💫'
+            'fanyi5': '💫',
+            'fanyi6': '🌸'
         };
         return icons[style] || '🎭';
     }

@@ -115,7 +115,7 @@ web/
 
 ### 主页面
 - **URL**: `/`
-- **功能**: 显示5个周繁漪定妆照模板选择界面
+- **功能**: 显示6个周繁漪定妆照模板选择界面
 - **特点**: 展示实际定妆照缩略图
 
 ### 模板页面
@@ -126,6 +126,7 @@ web/
 - **定妆照3**: `/fanyi?template=3` - 造型3
 - **定妆照4**: `/fanyi?template=4` - 造型4
 - **定妆照5**: `/fanyi?template=5` - 造型5
+- **定妆照6**: `/fanyi?template=6` - 造型6
 
 ## 🔧 API接口
 
@@ -139,8 +140,8 @@ POST /api/register-templates
 {
   "success": true,
   "data": {
-    "totalTemplates": 5,
-    "successCount": 5,
+    "totalTemplates": 6,
+    "successCount": 6,
     "failedCount": 0,
     "registeredTemplates": [
       {

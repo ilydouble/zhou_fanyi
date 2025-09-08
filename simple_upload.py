@@ -15,10 +15,10 @@ def simple_upload():
         uploader = OSSUploader()
         print("✓ OSS连接成功")
         
-        # 定义5个模板
+        # 定义6个模板
         templates = []
-        
-        for i in range(1, 6):
+
+        for i in range(1, 7):
             file_path = Path(f'pics/fanyi-{i}.jpg')
             if file_path.exists():
                 print(f"上传 fanyi-{i}.jpg...")
