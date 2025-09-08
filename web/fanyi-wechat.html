@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>周繁漪AI人脸融合 - 微信版</title>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .template-preview {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .template-image {
+            width: 120px;
+            height: 160px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .template-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .upload-section {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .preview-image {
+            display: block;
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 0 auto 20px auto;
+            object-fit: contain;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-image {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .status-success {
+            background: #e8f7f0;
+            color: #27ae60;
+        }
+
+        .status-error {
+            background: #fdedec;
+            color: #e74c3c;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">← 返回</button>
+            <h1>🎭 周繁漪AI人脸融合</h1>
+            <p>微信专享版 - 拍照融合分享</p>
+        </div>
+
+        <div class="template-preview">
+            <img id="templateImage" class="template-image" src="" alt="模板预览">
+            <div id="templateName" class="template-name">加载中...</div>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">点击拍照或选择照片</div>
+                <div class="upload-hint">支持微信拍照和相册选择</div>
+            </div>
+
+            <img id="previewImage" class="preview-image hidden" src="" alt="预览">
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="retakeBtn" onclick="retakePhoto()" style="display: none;">重新拍照</button>
+                <button class="btn btn-primary" id="fusionBtn" onclick="startFusion()" disabled>🎨 开始融合</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <div>AI正在处理中，请稍候...</div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h3>🎉 融合完成</h3>
+            <img id="resultImage" class="result-image" src="" alt="融合结果">
+            
+            <div class="share-buttons">
+                <button class="btn btn-primary" onclick="saveToAlbum()">长按图片保存/分享</button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="resetApp()">重新制作</button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        let currentTemplate = null;
+        let userImageUrl = null; // 存储最终的图片URL（OSS或本地）
+        let resultImageUrl = null;
+        
+
+
+        // 显示状态消息
+        function showStatus(message, type = '') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type ? 'status-' + type : ''}`;
+            statusDiv.classList.remove('hidden');
+
+            if (message) {
+                setTimeout(() => {
+                    statusDiv.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        // 显示/隐藏加载状态
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        // 检查是否在微信浏览器中
+        function isWechatBrowser() {
+            return /micromessenger/i.test(navigator.userAgent);
+        }
+
+        // 获取URL参数
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 初始化页面
+        async function initPage() {
+            console.log('📱 开始初始化页面');
+
+            if (!isWechatBrowser()) {
+                showStatus('请在微信中打开此页面', 'error');
+                return;
+            }
+
+            // 获取模板ID
+            const templateId = getUrlParameter('template') || '1';
+            console.log('🎭 模板ID: ' + templateId);
+
+            try {
+                // 加载模板信息
+                const response = await fetch(`/api/template/${templateId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentTemplate = result.data;
+                    document.getElementById('templateImage').src = currentTemplate.thumbnailUrl;
+                    document.getElementById('templateName').textContent = currentTemplate.name;
+                    console.log('✅ 模板加载成功: ' + currentTemplate.name);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('❌ 模板加载失败: ' + error.message);
+                showStatus('模板加载失败', 'error');
+            }
+        }
+
+        // 初始化微信配置 - 按照你的例子修改
+        async function initWxConfig() {
+            console.log('📱 开始初始化微信配置');
+
+            try {
+                // 按照你的例子使用GET请求
+                const currentUrl = window.location.href.split('#')[0];
+                console.log('📍 当前URL: ' + currentUrl);
+
+                const response = await fetch(`/wechat-signature?url=${encodeURIComponent(currentUrl)}`);
+                const config = await response.json();
+
+                if (config.error) {
+                    throw new Error(config.error);
+                }
+
+                console.log('✅ 微信配置获取成功');
+                console.log('📋 配置详情: ' + JSON.stringify(config));
+
+                wx.config({
+                    debug: false, // 关闭调试模式
+                    appId: config.appId,
+                    timestamp: config.timestamp,
+                    nonceStr: config.nonceStr,
+                    signature: config.signature,
+                    jsApiList: [
+                        'chooseImage',
+                        'uploadImage',
+                        'downloadImage',
+                        'getLocalImgData',
+                        'previewImage'
+                    ]
+                });
+
+                wx.ready(function() {
+                    console.log('✅ 微信SDK初始化成功');
+                    showStatus('微信功能已就绪', 'success');
+                });
+
+                wx.error(function(res) {
+                    console.error('❌ 微信SDK初始化失败: ' + JSON.stringify(res));
+
+                    // 详细的错误分析
+                    let errorMsg = '微信功能初始化失败';
+                    if (res.errMsg) {
+                        if (res.errMsg.includes('invalid signature')) {
+                            errorMsg = '签名验证失败，请检查域名配置';
+                        } else if (res.errMsg.includes('invalid url domain')) {
+                            errorMsg = 'URL域名未配置，请在微信公众平台添加JS接口安全域名';
+                        } else if (res.errMsg.includes('permission denied')) {
+                            errorMsg = '权限被拒绝，请检查公众号权限配置';
+                        }
+                    }
+
+                    showStatus(errorMsg, 'error');
+                    console.error('🔍 错误详情: ' + errorMsg);
+                });
+
+            } catch (error) {
+                console.error('❌ 微信配置失败: ' + error.message);
+                showStatus('微信配置失败: ' + error.message, 'error');
+            }
+        }
+
+
+
+        // 拍照或选择照片 - 新的处理逻辑
+        function chooseImage() {
+            console.log('📷 用户点击拍照');
+
+            if (typeof wx === 'undefined') {
+                showStatus('微信SDK未加载', 'error');
+                return;
+            }
+
+            wx.chooseImage({
+                count: 1,
+                sizeType: ['original', 'compressed'],
+                sourceType: ['album', 'camera'],
+                success: function (res) {
+                    const localId = res.localIds[0];
+                    console.log('📷 拍照成功，localId: ' + localId);
+
+                    // 显示加载状态
+                    showLoading(true);
+                    showStatus('正在处理图片...', '');
+
+                    // 上传到微信服务器
+                    wx.uploadImage({
+                        localId: localId,
+                        isShowProgressTips: 0,
+                        success: function (uploadRes) {
+                            const serverId = uploadRes.serverId;
+                            console.log('⬆️ 上传成功，serverId: ' + serverId);
+
+                            // 关键改变：直接发送serverId到服务器处理
+                            processWechatImage(serverId);
+                        },
+                        fail: function(err) {
+                            showLoading(false);
+                            console.error('❌ 上传失败: ' + JSON.stringify(err));
+                            showStatus('图片上传失败', 'error');
+                        }
+                    });
+                },
+                fail: function(err) {
+                    console.error('❌ 选择图片失败: ' + JSON.stringify(err));
+                    showStatus('选择图片失败', 'error');
+                }
+            });
+        }
+
+        // 处理微信图片 - 发送到服务器下载并上传到OSS
+        async function processWechatImage(serverId) {
+            console.log('🔄 开始处理微信图片，serverId: ' + serverId);
+
+            try {
+                const response = await fetch('/api/wechat/download-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ serverId: serverId })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('✅ 图片处理成功，URL: ' + result.url);
+
+                    // 使用服务器返回的URL显示图片
+                    showPreview(result.url);
+                    userImageUrl = result.url;
+
+                    showLoading(false);
+                    showStatus('图片处理完成！', 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                showLoading(false);
+                console.error('❌ 图片处理失败: ' + error.message);
+                showStatus('图片处理失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示预览 - 使用服务器URL
+        function showPreview(imageUrl) {
+            console.log('🖼️ 显示预览，URL: ' + imageUrl);
+
+            const uploadArea = document.getElementById('uploadArea');
+            const previewImage = document.getElementById('previewImage');
+            const retakeBtn = document.getElementById('retakeBtn');
+            const fusionBtn = document.getElementById('fusionBtn');
+
+            // 设置图片源
+            previewImage.src = imageUrl;
+            previewImage.onload = function() {
+                console.log('✅ 预览图片加载成功');
+
+                // 更新UI
+                uploadArea.style.display = 'none';
+                previewImage.classList.remove('hidden');
+                retakeBtn.style.display = 'inline-block';
+                fusionBtn.disabled = false; // 关键：启用融合按钮
+
+                showStatus('照片准备就绪，可以开始融合了！', 'success');
+            };
+
+            previewImage.onerror = function() {
+                console.error('❌ 预览图片加载失败');
+                showStatus('图片显示失败', 'error');
+            };
+        }
+
+        // 重新拍照
+        function retakePhoto() {
+            console.log('🔄 用户选择重新拍照');
+
+            const uploadArea = document.getElementById('uploadArea');
+            const previewImage = document.getElementById('previewImage');
+            const retakeBtn = document.getElementById('retakeBtn');
+            const fusionBtn = document.getElementById('fusionBtn');
+
+            uploadArea.style.display = 'block';
+            previewImage.classList.add('hidden');
+            retakeBtn.style.display = 'none';
+            fusionBtn.disabled = true;
+            userImageUrl = null;
+
+            showStatus('', '');
+        }
+
+        // 开始融合
+        async function startFusion() {
+            console.log('🎨 开始人脸融合');
+
+            if (!userImageUrl || !currentTemplate) {
+                showStatus('请先选择照片和模板', 'error');
+                return;
+            }
+
+            showLoading(true);
+            showStatus('AI正在进行人脸融合，请稍候...', '');
+
+            try {
+                const response = await fetch('/api/face-fusion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userImageUrl: userImageUrl,
+                        templateId: currentTemplate.id
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('✅ 人脸融合成功');
+                    showResult(result.data.imageUrl || result.data.localImageUrl);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('❌ 人脸融合失败: ' + error.message);
+                showStatus('融合失败: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 显示结果
+        function showResult(imageUrl) {
+            console.log('🎉 显示融合结果: ' + imageUrl);
+
+            resultImageUrl = imageUrl;
+
+            const uploadSection = document.querySelector('.upload-section');
+            const resultSection = document.getElementById('resultSection');
+            const resultImage = document.getElementById('resultImage');
+
+            resultImage.src = imageUrl;
+            uploadSection.style.display = 'none';
+            resultSection.style.display = 'block';
+
+            showStatus('融合完成！', 'success');
+        }
+
+
+
+        // 长按图片保存/分享 - 微信原生功能
+        function saveToAlbum() {
+            if (!resultImageUrl) {
+                showStatus('没有可保存的图片', 'error');
+                return;
+            }
+
+            console.log('💾 显示图片供用户长按保存/分享: ' + resultImageUrl);
+
+            // 显示图片预览，用户可以长按进行保存或发送给朋友
+            showImagePreviewForSave(resultImageUrl);
+        }
+
+        // 显示图片预览供用户长按保存（核心功能）
+
+        // 显示图片预览供用户长按保存（核心功能）
+
+        // 显示图片预览供用户长按保存
+        function showImagePreviewForSave(imageUrl) {
+            console.log('🔍 显示图片预览供用户保存: ' + imageUrl);
+
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.9);
+                z-index: 10000;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            `;
+
+            // 创建图片元素
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.style.cssText = `
+                max-width: 90%;
+                max-height: 70%;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+                object-fit: contain;
+            `;
+
+            // 添加提示文字
+            const hint = document.createElement('div');
+            hint.innerHTML = `
+                <div style="color: white; font-size: 18px; text-align: center; margin: 20px 0;">
+                    📱 长按图片进行操作
+                </div>
+                <div style="color: #ccc; font-size: 14px; text-align: center; line-height: 1.5;">
+                    在微信中长按图片可以：<br>
+                    💾 保存图片到手机相册<br>
+                    📤 发送给朋友
+                </div>
+            `;
+
+            // 添加关闭按钮
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '✕ 关闭';
+            closeBtn.style.cssText = `
+                background: rgba(255,255,255,0.2);
+                color: white;
+                border: 1px solid rgba(255,255,255,0.3);
+                padding: 12px 24px;
+                border-radius: 25px;
+                margin-top: 20px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            `;
+
+            closeBtn.onmouseover = function() {
+                this.style.background = 'rgba(255,255,255,0.3)';
+            };
+
+            closeBtn.onmouseout = function() {
+                this.style.background = 'rgba(255,255,255,0.2)';
+            };
+
+            closeBtn.onclick = function() {
+                document.body.removeChild(overlay);
+                console.log('🔍 用户关闭了图片预览');
+            };
+
+            // 点击遮罩层也可以关闭
+            overlay.onclick = function(e) {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                    console.log('🔍 用户点击遮罩关闭了图片预览');
+                }
+            };
+
+            // 组装元素
+            overlay.appendChild(img);
+            overlay.appendChild(hint);
+            overlay.appendChild(closeBtn);
+            document.body.appendChild(overlay);
+
+            showStatus('请长按图片保存到相册', 'success');
+            console.log('✅ 图片预览已显示');
+        }
+
+        // 重置应用
+        function resetApp() {
+            console.log('🔄 重置应用');
+
+            const uploadSection = document.querySelector('.upload-section');
+            const resultSection = document.getElementById('resultSection');
+
+            uploadSection.style.display = 'block';
+            resultSection.style.display = 'none';
+
+            retakePhoto();
+        }
+
+        // 返回主页
+        function goBack() {
+            window.location.href = '/';
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 页面开始加载');
+
+            // 初始化页面
+            initPage();
+
+            // 延迟初始化微信配置
+            setTimeout(() => {
+                initWxConfig();
+            }, 1000);
+
+            // 绑定上传区域点击事件
+            document.getElementById('uploadArea').addEventListener('click', function() {
+                console.log('👆 用户点击上传区域');
+                chooseImage();
+            });
+
+            console.log('✅ 页面初始化完成');
+        });
+    </script>
+</body>
+</html>
