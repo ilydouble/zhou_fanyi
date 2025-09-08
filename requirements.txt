@@ -8,6 +8,10 @@ flask>=2.3.0
 flask-cors>=4.0.0
 pillow>=10.0.0
 
+# 视频处理依赖
+opencv-python>=4.8.0
+numpy>=1.24.0
+
 # 阿里云SDK (可选，用于人脸融合)
 alibabacloud-facebody20191230>=2.0.0
 alibabacloud-credentials>=0.3.0

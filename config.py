@@ -16,6 +16,12 @@ FILE_SERVER_PORT = 8000              # 本地文件服务器端口
 THUMBNAIL_SIZE = (200, 200)          # 缩略图尺寸
 THUMBNAIL_QUALITY = 85               # 缩略图质量 (1-100)
 
+# 视频二维码合成配置
+QR_SIZE = 120                        # 二维码大小（像素）
+QR_MARGIN = 20                       # 距离边缘的边距
+QR_OPACITY = 0.9                     # 二维码透明度 (0-1)
+VIDEOS_WITH_QR_DIR = "videos_with_qr" # 合成视频输出目录
+
 # 视频生成参数
 VIDEO_GENERATION_PARAMS = {
     "template_id": "normal",         # 动作模板: normal, calm, active
