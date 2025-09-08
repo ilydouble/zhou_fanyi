@@ -78,6 +78,22 @@ class OSSUploader:
             logger.error(f"生成签名URL失败: {e}")
             return None
 
+    def generate_public_url(self, oss_object_key: str) -> str:
+        """
+        生成OSS公开访问URL（不带签名）
+        注意：需要bucket设置为公开读取权限
+
+        Args:
+            oss_object_key: OSS对象键（文件路径）
+
+        Returns:
+            公开访问URL
+        """
+        # 构建公开访问URL
+        public_url = f"https://{self.bucket_name}.{self.endpoint}/{oss_object_key}"
+        logger.info(f"生成公开URL: {oss_object_key}")
+        return public_url
+
     def _test_url_access(self, url: str) -> bool:
         """
         测试URL是否可以访问
@@ -95,13 +111,14 @@ class OSSUploader:
         except Exception:
             return False
     
-    def upload_file(self, local_file_path: Path, custom_path: Optional[str] = None) -> Optional[str]:
+    def upload_file(self, local_file_path: Path, custom_path: Optional[str] = None, use_public_url: bool = False) -> Optional[str]:
         """
         上传文件到OSS并返回公网URL
 
         Args:
             local_file_path: 本地文件路径
             custom_path: 自定义OSS路径，如果不提供则使用文件名
+            use_public_url: 是否使用公开URL（不带签名），默认False使用签名URL
 
         Returns:
             文件的公网URL，失败返回None
@@ -129,14 +146,20 @@ class OSSUploader:
             result = self.bucket.put_object_from_file(oss_object_key, str(local_file_path))
 
             if result.status == 200:
-                # 直接生成签名URL（最可靠的方式）
-                signed_url = self.generate_signed_url(oss_object_key, expire_hours=24)
-                if signed_url:
-                    logger.info(f"文件上传成功，生成签名URL: {oss_object_key}")
-                    return signed_url
+                if use_public_url:
+                    # 生成公开URL（用于模板等需要API访问的文件）
+                    public_url = self.generate_public_url(oss_object_key)
+                    logger.info(f"文件上传成功，生成公开URL: {oss_object_key}")
+                    return public_url
                 else:
-                    logger.error(f"文件上传成功但生成签名URL失败: {oss_object_key}")
-                    return None
+                    # 生成签名URL（用于用户上传的文件）
+                    signed_url = self.generate_signed_url(oss_object_key, expire_hours=24)
+                    if signed_url:
+                        logger.info(f"文件上传成功，生成签名URL: {oss_object_key}")
+                        return signed_url
+                    else:
+                        logger.error(f"文件上传成功但生成签名URL失败: {oss_object_key}")
+                        return None
             else:
                 logger.error(f"文件上传失败，状态码: {result.status}")
                 return None

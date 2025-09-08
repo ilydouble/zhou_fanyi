@@ -1,151 +1,108 @@
-# LivePortrait 视频生成器
+# 🎭 周繁漪AI人脸融合项目
 
-这个项目使用阿里云的LivePortrait API来检测图像质量并生成人像动态视频。
+基于周繁漪定妆照的真实AI人脸融合Web应用，使用阿里云人脸融合API实现高质量的人脸融合效果。
 
-## 功能特性
+## 🚀 快速开始
 
-- 自动检测 `pics` 文件夹下的图片质量
-- 对通过检测的图片生成人像动态视频
-- 使用 `sound/qiezi.wav` 作为音频源
-- 生成的视频保存到 `videos` 文件夹
-
-## 安装依赖
-
+### 1. 安装依赖
 ```bash
 pip install -r requirements.txt
 ```
 
-## 配置
+### 2. 配置环境变量
+创建 `.env` 文件：
+```env
+# 阿里云API密钥（人脸融合服务）
+ALIYUN_ACCESS_KEY_ID=your_access_key_id
+ALIYUN_ACCESS_KEY_SECRET=your_access_key_secret
 
-1. 确保 `.env` 文件中包含你的阿里云API密钥和OSS配置：
-```
-ALIYUN_API_KEY=your_api_key_here
-
-# OSS配置
+# OSS配置（上海区域）
 OSS_ACCESS_KEY_ID=your_access_key_id
 OSS_ACCESS_KEY_SECRET=your_access_key_secret
 OSS_BUCKET_NAME=your_bucket_name
-OSS_ENDPOINT=oss-cn-beijing.aliyuncs.com
+OSS_ENDPOINT=oss-cn-shanghai.aliyuncs.com
 OSS_BASE_PATH=liveportrait
 ```
 
-2. 确保以下目录结构存在：
-```
-├── pics/          # 放置要处理的图片
-├── sound/         # 包含 qiezi.wav 音频文件
-├── videos/        # 生成的视频输出目录
-├── .env           # API密钥配置
-└── video_generator.py  # 主程序
-```
-
-## 使用方法
-
-### 快速开始
-
-1. 将要处理的图片放入 `pics` 文件夹
-2. 确保 `sound/qiezi.wav` 文件存在
-3. 运行环境测试：
+### 3. 上传并注册模板
 ```bash
-python test_setup.py
+# 上传模板到OSS
+python simple_upload.py
+
+# 启动服务器
+python web_server.py
+
+# 注册模板到阿里云（在另一个终端）
+curl -X POST http://localhost:8081/api/register-templates
 ```
 
-4. 运行主程序：
-```bash
-python video_generator.py
+### 4. 访问应用
+- 主页: http://localhost:8081/
+- 手机访问: http://192.168.1.24:8081
+
+## 📁 项目结构
+
+```
+zhou_fanyi/
+├── web/                    # 前端文件
+│   ├── index.html         # 主页面 - 模板选择
+│   ├── fanyi.html         # 融合页面 - AI人脸融合
+│   ├── app.js             # 主页逻辑
+│   ├── fanyi.js           # 融合页逻辑
+│   └── templates_config.json  # 模板配置（含阿里云模板ID）
+├── pics/                  # 周繁漪定妆照原图
+├── images/results/        # 融合结果保存目录
+├── web_server.py          # Flask后端服务
+├── face_fusion_sdk.py     # 阿里云人脸融合SDK
+├── oss_uploader.py        # OSS文件上传
+├── simple_upload.py       # 模板上传脚本
+└── 二维码生成器.html      # 二维码生成工具
 ```
 
-### 演示模式
+## ✨ 功能特性
 
-运行完整的演示流程（OSS版本）：
-```bash
-python demo_oss.py
-```
+- 🤖 **真实AI人脸融合** - 阿里云专业API，效果自然逼真
+- 🎨 **5种周繁漪定妆照** - 已注册为阿里云官方模板
+- 📱 **移动端优化** - 响应式设计，支持拍照上传
+- ⚡ **即时处理** - 几秒钟内获得融合结果
+- 💾 **自动保存** - 结果自动下载到本地
+- 🔗 **直链访问** - 支持通过URL直接访问特定模板
+- 📱 **二维码分享** - 内置二维码生成器，方便分享
 
-或运行本地版本（需要可公网访问的服务器）：
-```bash
-python demo.py
-```
+## 🔗 访问路由
 
-### 自定义配置
+- 主页: `/`
+- 定妆照1: `/fanyi?template=1`
+- 定妆照2: `/fanyi?template=2`
+- 定妆照3: `/fanyi?template=3`
+- 定妆照4: `/fanyi?template=4`
+- 定妆照5: `/fanyi?template=5`
 
-编辑 `config.py` 文件来自定义参数：
-- 视频生成参数（帧率、动作幅度等）
-- 文件路径配置
-- 服务器端口设置
+## 📊 当前状态
 
-## 支持的文件格式
+- ✅ **模板系统** - 5个周繁漪定妆照已上传并注册
+- ✅ **阿里云集成** - 真实人脸融合API已接入
+- ✅ **文件上传** - OSS集成完成
+- ✅ **前端界面** - 响应式设计，移动端优化
+- ✅ **人脸融合** - 真实AI融合功能已实现
+- ✅ **结果处理** - 自动下载和本地保存
 
-### 图片格式
-- JPEG (.jpg, .jpeg)
-- PNG (.png)
-- BMP (.bmp)
-- WebP (.webp)
+## 🛠️ 工具文件
 
-### 音频格式
-- WAV (.wav)
-- MP3 (.mp3)
+- **二维码生成器.html** - 为应用生成分享二维码
+- **web/README.md** - 详细的使用文档和API说明
 
-## 图片要求
+## 🎯 核心技术
 
-- 文件大小 < 10MB
-- 宽高比 ≤ 2
-- 最大边长 ≤ 4096像素
-- 必须包含清晰的人脸
+- **阿里云人脸融合API** - 专业AI服务
+- **OSS云存储** - 文件上传和管理
+- **Flask Web框架** - 后端API服务
+- **响应式前端** - 移动端优化
 
-## 音频要求
+## 📞 技术支持
 
-- 文件大小 < 15MB
-- 时长：1秒 < 时长 < 5分钟
-- 需包含清晰、响亮的人声
-- 去除环境噪音和背景音乐
+详细文档请查看 `web/README.md`
 
-## 工作流程
+## 📄 许可证
 
-1. **文件上传**：自动上传图片和音频到阿里云OSS，生成签名URL
-2. **图片质量检测**：使用 `liveportrait-detect` 模型检测图片是否符合要求
-3. **视频生成**：对通过检测的图片使用 `liveportrait` 模型生成动态视频
-4. **任务监控**：监控异步任务状态直到完成
-5. **结果下载**：下载生成的视频到本地
-
-## 技术特点
-
-### 🔐 签名URL安全访问
-- 使用OSS签名URL技术，支持私有Bucket
-- 自动生成24小时有效期的签名链接
-- 无需公开Bucket权限，保护文件安全
-
-### ⚡ 自动化流程
-- 自动上传文件到OSS对象存储
-- 智能文件分类（图片/音频）
-- 异步任务状态监控
-- 自动结果下载
-
-## 注意事项
-
-- 文件会自动上传到阿里云OSS对象存储
-- 签名URL有效期为24小时，足够API处理使用
-- 视频生成是异步过程，可能需要几分钟时间
-- 生成的视频文件名格式：`{原图片名}_generated.mp4`
-- 如果图片质量检测不通过，会跳过该图片并记录原因
-
-## 错误处理
-
-程序包含完整的错误处理和日志记录：
-- 网络请求错误
-- API调用错误
-- 文件操作错误
-- 任务超时处理
-
-## 日志输出
-
-程序会输出详细的日志信息，包括：
-- 处理进度
-- 检测结果
-- 任务状态
-- 错误信息
-
-## API限制
-
-请注意阿里云API的使用限制和计费规则。详细信息请参考：
-- [LivePortrait图像检测API参考](docs/LivePortrait图像检测API参考.md)
-- [LivePortrait视频生成API参考](docs/LivePortrait%20视频生成API参考.md)
+MIT License

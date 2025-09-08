@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>{{TEMPLATE_NAME}} - AI人脸融合</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, {{BG_COLOR}} 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, {{BG_COLOR}}, #ffa726);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .template-preview-section {
+            margin-bottom: 25px;
+        }
+
+        .template-preview-card {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .template-preview-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .template-preview-info {
+            flex: 1;
+        }
+
+        .template-preview-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .template-preview-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: {{BG_COLOR}};
+            background: rgba(255, 107, 107, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: {{BG_COLOR}};
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, {{BG_COLOR}}, #ffa726);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid {{BG_COLOR}};
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='/'">←</button>
+            <h1>🎭 {{TEMPLATE_NAME}}</h1>
+            <p>{{TEMPLATE_DESCRIPTION}}</p>
+        </div>
+
+        <div class="content">
+            <!-- 模板预览 -->
+            <div class="template-preview-section">
+                <div class="section-title">选择的造型</div>
+                <div class="template-preview-card">
+                    <img id="templatePreview" class="template-preview-image" alt="模板预览">
+                    <div class="template-preview-info">
+                        <div class="template-preview-name" id="templatePreviewName">加载中...</div>
+                        <div class="template-preview-desc" id="templatePreviewDesc">请稍候</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 照片上传 -->
+            <div class="upload-section">
+                <div class="section-title">上传照片</div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">点击或拖拽上传照片</div>
+                    <div class="upload-hint">支持 JPG、PNG 格式，建议正脸照片</div>
+                    <img id="previewImage" class="preview-image hidden" alt="预览">
+                </div>
+                <input type="file" id="fileInput" accept="image/*" capture="camera">
+            </div>
+
+            <!-- 操作按钮 -->
+            <button class="btn btn-primary" id="generateBtn" disabled>
+                🎨 开始融合
+            </button>
+
+            <!-- 加载状态 -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>AI正在处理中，请稍候...</div>
+            </div>
+
+            <!-- 结果展示 -->
+            <div class="result-section" id="resultSection">
+                <div class="section-title">融合结果</div>
+                <img id="resultImage" class="result-image" alt="融合结果">
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="saveBtn">💾 保存到相册</button>
+                    <button class="btn btn-primary" id="shareBtn">📱 分享朋友圈</button>
+                </div>
+                <button class="btn btn-secondary" id="resetBtn">🔄 重新制作</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 从URL获取模板信息
+        const urlParams = new URLSearchParams(window.location.search);
+        const TEMPLATE_ID = urlParams.get('template') || '1';
+        const TEMPLATE_NAME = '{{TEMPLATE_NAME}}';
+        const TEMPLATE_STYLE = '{{TEMPLATE_STYLE}}';
+    </script>
+    <script src="fanyi.js"></script>
+</body>
+</html>
