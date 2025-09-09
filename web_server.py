@@ -5,7 +5,6 @@
 """
 
 import os
-import sys
 import time
 import uuid
 import json
@@ -245,6 +244,129 @@ def get_template(template_id):
         return jsonify({
             'success': False,
             'message': f'获取模板失败: {str(e)}'
+        }), 500
+
+@app.route('/api/register-templates', methods=['POST'])
+def register_templates():
+    """注册模板到阿里云人脸融合服务"""
+    global templates_config
+
+    try:
+        if not face_fusion_client:
+            return jsonify({
+                'success': False,
+                'message': '人脸融合服务未初始化'
+            }), 500
+
+        # 获取当前模板配置
+        templates = templates_config.get('templates', [])
+        if not templates:
+            return jsonify({
+                'success': False,
+                'message': '没有找到模板配置'
+            }), 400
+
+        registered_templates = []
+        success_count = 0
+        failed_count = 0
+
+        for template in templates:
+            template_id = template.get('id')
+            template_url = template.get('templateUrl')
+
+            # 跳过已经注册的模板
+            if template.get('aliyunTemplateId') and template.get('registrationStatus') == 'success':
+                print(f"模板 {template_id} 已经注册，跳过")
+                registered_templates.append({
+                    'id': template_id,
+                    'name': template.get('name'),
+                    'aliyunTemplateId': template.get('aliyunTemplateId'),
+                    'status': 'already_registered'
+                })
+                success_count += 1
+                continue
+
+            if not template_url:
+                print(f"模板 {template_id} 缺少templateUrl，跳过")
+                failed_count += 1
+                continue
+
+            print(f"开始注册模板 {template_id}: {template.get('name')}")
+
+            # 调用阿里云API注册模板
+            result = face_fusion_client.add_face_template(template_url)
+
+            if result.get('success'):
+                aliyun_template_id = result.get('data', {}).get('templateId')
+                request_id = result.get('data', {}).get('requestId')
+
+                # 更新模板配置
+                template['aliyunTemplateId'] = aliyun_template_id
+                template['registrationRequestId'] = request_id
+                template['registrationStatus'] = 'success'
+
+                registered_templates.append({
+                    'id': template_id,
+                    'name': template.get('name'),
+                    'aliyunTemplateId': aliyun_template_id,
+                    'status': 'success'
+                })
+                success_count += 1
+                print(f"✓ 模板 {template_id} 注册成功: {aliyun_template_id}")
+            else:
+                template['registrationStatus'] = 'failed'
+                template['registrationError'] = result.get('message', '未知错误')
+
+                registered_templates.append({
+                    'id': template_id,
+                    'name': template.get('name'),
+                    'status': 'failed',
+                    'error': result.get('message', '未知错误')
+                })
+                failed_count += 1
+                print(f"✗ 模板 {template_id} 注册失败: {result.get('message')}")
+
+        # 保存更新后的配置
+        try:
+            import json
+            updated_config = {
+                'templates': templates,
+                'total': len(templates),
+                'lastRegistration': {
+                    'timestamp': str(int(time.time())),
+                    'totalTemplates': len(templates),
+                    'successCount': success_count,
+                    'failedCount': failed_count
+                }
+            }
+
+            with open(TEMPLATES_CONFIG_FILE, 'w', encoding='utf-8') as f:
+                json.dump(updated_config, f, ensure_ascii=False, indent=2)
+
+            # 重新加载配置
+            templates_config = updated_config
+
+            print(f"✓ 配置已更新: 成功 {success_count}, 失败 {failed_count}")
+
+        except Exception as e:
+            print(f"保存配置失败: {e}")
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'totalTemplates': len(templates),
+                'successCount': success_count,
+                'failedCount': failed_count,
+                'registeredTemplates': registered_templates
+            },
+            'message': f'模板注册完成: 成功 {success_count}, 失败 {failed_count}'
+        })
+
+    except Exception as e:
+        print(f"模板注册失败: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'模板注册失败: {str(e)}'
         }), 500
 
 @app.route('/api/upload', methods=['POST'])
